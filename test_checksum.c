@@ -1,6 +1,29 @@
 #include <stdio.h>
 #include <stdint.h>
 
+typedef unsigned int u32;
+typedef unsigned long __u64;
+typedef unsigned int __u32;
+typedef unsigned short __u16;
+
+#ifdef __CHECKER__
+#define __bitwise__ __attribute__((bitwise))
+#else
+#define __bitwise__
+#endif
+#define __bitwise __bitwise__
+
+typedef __u16 __bitwise __le16;
+typedef __u16 __bitwise __be16;
+typedef __u32 __bitwise __le32;
+typedef __u32 __bitwise __be32;
+typedef __u64 __bitwise __le64;
+typedef __u64 __bitwise __be64;
+
+typedef __u16 __bitwise __sum16;
+typedef __u32 __bitwise __wsum;
+
+
 uint8_t ip_header[] = {0x45, 0x00, 0x00, 0x30, 0xcc, 0x61, 0x40, 0x00, 
                        0x40, 0x06, 0x4c, 0x02, 0x0a, 0x05, 0x04, 0x6b, 
                        0x0a, 0x08, 0x09, 0xed};
@@ -33,10 +56,14 @@ uint16_t summing(uint8_t *data, uint16_t prior_cksum, uint32_t size)
         cksum += *(data + index) << 8 & 0xff00;
         index += 2;
     }
+    
+    cksum = (__sum16)(cksum + (cksum >= 0xFFFF));
 
-    while (cksum > 0xffff) {
-        cksum = (cksum >> 16) + (cksum & 0xffff);
-    }
+//    while (cksum > 0xffff) {
+//        cksum = (cksum >> 16) + (cksum & 0xffff);
+//    }
+
+    printf("cksum = %u, cksum = %x\n", cksum, cksum);
 
     return cksum;
 }
